@@ -1,0 +1,49 @@
+services:
+  fnano:
+    restart: unless-stopped
+    env_file:
+      - .env
+    build:
+      context: ./
+      dockerfile: ./dockerfiles/python${PYTHON_VERSION}/Dockerfile
+      labels:
+        - fnano
+    volumes:
+      - type: bind
+        source: .
+        target: /code
+    entrypoint:
+      - /bin/sh
+      - -c
+      - |
+        gunicorn svc.main:app --workers 2 \
+        --worker-class uvicorn.workers.UvicornWorker -b 0.0.0.0:5001
+    ports:
+      - "5001:5001"
+
+  caddy:
+    image: caddy:2-alpine
+    container_name: caddy
+    restart: unless-stopped
+    env_file:
+      - .env
+    ports:
+      - "5002:5002"
+      - "80:80"
+      - "443:443"
+    volumes:
+      - type: bind
+        source: ./Caddyfile
+        target: /etc/caddy/Caddyfile
+      - type: volume
+        source: caddy_data
+        target: /data
+      - type: volume
+        source: caddy_config
+        target: /config
+    depends_on:
+      - fnano
+
+volumes:
+  caddy_data:
+  caddy_config:
