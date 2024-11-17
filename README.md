@@ -19,6 +19,10 @@ It is being used to perform the following tasks
 - Describe images of a disaster
 - Describe the current state of a disaster in real-time using commentary and images
 
+These features make it possible to achieve the powerful features of the AIDA platform.
+
+![aida-platform](./assets/desktop-demo.png)
+
 
 ### Run in containers
 
