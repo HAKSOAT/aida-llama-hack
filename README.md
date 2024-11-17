@@ -59,7 +59,7 @@ If you want to run the app locally, without using Docker, then:
 
 - Priya Prakash
 - Nitish Mital
-- Nihir
+- Nihir Vedd
 - Habeeb Shopeju
 
 
