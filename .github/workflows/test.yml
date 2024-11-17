@@ -6,7 +6,7 @@ on:
 
   pull_request:
     branches:
-      - master
+      - main
 
   schedule:
     # Every sunday at 8:05 UTC

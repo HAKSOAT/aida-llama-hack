@@ -5,7 +5,7 @@ on:
 
   pull_request:
     branches:
-      - master
+      - main
   schedule:
     # Every Sunday at 8:05 UTC
     - cron: "5 8 * * 0"
