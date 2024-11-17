@@ -19,6 +19,8 @@ It is being used to perform the following tasks
 - Describe images of a disaster
 - Describe the current state of a disaster in real-time using commentary and images
 
+We also get top use the SAM2 model to segment the disaster area from the image for further analysis.
+
 These features make it possible to achieve the powerful features of the AIDA platform.
 
 ![aida-platform](./assets/desktop-demo.png)
