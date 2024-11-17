@@ -43,7 +43,7 @@ help: ## Show this help message.
 
 .PHONY: test
 test: ## Run the tests against the current version of Python.
-	cd svc && uv run pytest -vv && cd ..
+	cd backend && uv run pytest -vv && cd ..
 
 .PHONY: dep-lock
 dep-lock: ## Freeze deps in 'requirements*.txt' files.
