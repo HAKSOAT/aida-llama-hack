@@ -118,7 +118,7 @@ class LlamaCaption(Inference):
             conversations.append(
                 [
                     {
-                        "role": "system",
+                        "role": "user",
                         "content": [
                             {
                                 "type": "text",

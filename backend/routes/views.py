@@ -14,7 +14,7 @@ from backend.apis.llama import (
     LlamaClassification,
     LlamaRealtimeDescription,
 )
-
+from backend.schemas.response_schema import CrisisType, Caption, AidTags, Commentary, RealtimeDescription
 router = APIRouter()
 logger = logging.getLogger(__name__)
 
@@ -31,7 +31,8 @@ async def index() -> dict[str, str]:
 async def get_crisis_type(
     request: Request,
     # auth: Depends = Depends(get_current_user)
-) -> dict[str, str]:
+    response_model=CrisisType
+) -> CrisisType:
     image_directory = iter(
         (Path(mock_images.__path__[0]) / "crisis_type").glob("*.webp")
     )
@@ -40,11 +41,12 @@ async def get_crisis_type(
     llama_classification = LlamaClassification(model)
     result = llama_classification.image_to_text(images)
     text = result[0]
-    return {"result": text}
+    return CrisisType(result=text)
 
 
 @router.get("/get-caption")
-async def get_caption(request: Request) -> dict[str, str]:
+async def get_caption(request: Request, 
+                      response_model=Caption) -> Caption:
     target_extensions = ["*.jpg", "*.png"]
     images = [
         Image.open(str(file))
@@ -54,8 +56,8 @@ async def get_caption(request: Request) -> dict[str, str]:
     model = request.app.state.llama_model
     llama_caption = LlamaCaption("flood", model)
     result = llama_caption.image_to_text(images)
-    text = result[0]
-    return {"result": json.loads(text)}
+    obj = {k.lower(): v for k, v in json.loads(result[0]).items()}
+    return Caption(result=obj)
 
 
 @router.get("/get-segmentation")
@@ -64,7 +66,8 @@ async def get_segmentation(request: Request) -> None:
 
 
 @router.get("/{event_id}/description")
-async def get_description(request: Request, event_id: str) -> dict[str, str]:
+async def get_description(request: Request, event_id: str, 
+                          response_model=RealtimeDescription) -> RealtimeDescription:
     model = request.app.state.llama_model
     llama_realtime_description = LlamaRealtimeDescription("flood", model)
     commentary = [
@@ -74,11 +77,12 @@ async def get_description(request: Request, event_id: str) -> dict[str, str]:
     ]
     img_captions = [""]
     result = llama_realtime_description.custom_inference(commentary, img_captions)
-    return {"result": result[0]}
+    return RealtimeDescription(result=result[0])
 
 
 @router.get("/get-aid-tags")
-async def get_aid_tags(request: Request) -> dict[str, dict[str, int]]:
+async def get_aid_tags(request: Request, 
+                       response_model=AidTags) -> AidTags:
     texts = [
         "I'm alone, and the power is out. I don't have enough medication or food to last much longer. Please, can someone come and check on us here?",
         "The bridge near us has collapsed, and we're stranded. My husband is injured, and needs first-aid. We need food, clean water, and blankets for the kids. Can someone help us get supplies?",
@@ -86,4 +90,4 @@ async def get_aid_tags(request: Request) -> dict[str, dict[str, int]]:
     model = request.app.state.llama_model
     llama_aid_tagging = LlamaAidTagging("flood", model)
     result = llama_aid_tagging.text_to_mapping(texts)
-    return {"result": result}
+    return AidTags(result=result)
