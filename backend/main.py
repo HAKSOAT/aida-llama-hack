@@ -1,15 +1,17 @@
 from contextlib import asynccontextmanager
+from typing import AsyncGenerator
 
 from fastapi import FastAPI
 from starlette.middleware.cors import CORSMiddleware
 
+from backend.apis.config import MllamaConfig
+from backend.apis.llama import ModelManager
 from backend.core import auth
 from backend.routes import views
-from backend.apis.llama import ModelManager
-from backend.apis.config import MllamaConfig
+
 
 @asynccontextmanager
-async def lifespan(app: FastAPI):
+async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     llama_model = ModelManager(MllamaConfig())
     app.state.llama_model = llama_model
     yield
