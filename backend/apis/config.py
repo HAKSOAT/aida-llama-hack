@@ -11,5 +11,5 @@ class Config(BaseModel):
 
 class MllamaConfig(Config):
     MODEL_NAME: str = "meta-llama/Llama-3.2-11B-Vision-Instruct"
-    TEMPERATURE: float = 0.7
-    TOP_P: float = 0.9
+    TEMPERATURE: float = 0.1
+    TOP_P: float = 0.1

@@ -1,9 +1,9 @@
 import json
+import torch
 from backend.apis.inference import Inference
 from transformers import MllamaForConditionalGeneration, MllamaProcessor
 from PIL import Image
-from typing import List, Optional
-import torch
+from typing import List, Optional, Dict
 from backend.apis.config import Config, MllamaConfig
 
 
@@ -146,6 +146,9 @@ class LlamaAidTagging(Inference):
         raise NotImplementedError("Not implemented for LlamaAidTagging")
     
     def text_to_image(self, input: List[str]) -> List[Image.Image]:
+        raise NotImplementedError("Not implemented for LlamaAidTagging")
+    
+    def text_to_text(self, input: List[str]) -> List[str]:
         conversation = []
         for commentary in input:
             formated_aid_resources = "', '".join(self.aid_resources)
@@ -185,10 +188,12 @@ class LlamaAidTagging(Inference):
             max_new_tokens=self.manager.config.MAX_TOKENS
         )
         responses = self.manager.processor.batch_decode(outputs, skip_special_tokens=True)
-        print(responses)
         batch_texts = [response.split("assistant\n\n")[-1].strip()
                  for response in responses]
-
+        return batch_texts
+        
+    def text_to_mapping(self, input: List[str]) -> Dict[str, int]:
+        batch_texts = self.text_to_text(input)
         aid_frequencies = {aid.lower(): 0 for aid in self.aid_resources}
         for aid in self.aid_resources:
             for texts in batch_texts:
@@ -196,3 +201,45 @@ class LlamaAidTagging(Inference):
                 aid_frequencies[aid] += texts.lower().count(aid)
 
         return aid_frequencies
+
+
+class LlamaRealtimeDescription(Inference):
+    def __init__(self, disaster: str, model: ModelManager):
+        self.model = model
+        self.disaster = disaster
+
+    def image_to_text(self, input: List[Image.Image]) -> List[str]:
+        raise NotImplementedError("Not implemented for LlamaRealtimeDescription")
+    
+    def text_to_image(self, input: List[str]) -> List[Image.Image]:
+        raise NotImplementedError("Not implemented for LlamaRealtimeDescription")
+    
+    def text_to_text(self, input: List[str]) -> List[str]:
+        raise NotImplementedError("Not implemented for LlamaRealtimeDescription")
+    
+    def custom_inference(self, commentary: List[str], img_captions: List[str]) -> List[str]:
+        user_prompt = f"Below is a time-ordered list of commentaries by distressed citizens and image descriptions" \
+                      f"showing damage done by a {self.disaster} disaster. Create a 1 sentence summary which describes the latest and " \
+                      f"most critical information for an aid worker to know what jobs they should prioritise (and where if necessary). " \
+                      f"Commentaries: {commentary}. Image Descriptions: {img_captions}. Be specific about the summary of the situation. " \
+                      f"Your response should focus on the key information, and not intro or outro fluff."
+
+        conversation = [
+            {
+        "role": "user",
+        "content": [
+            {
+                "type": "text", "text": user_prompt},
+            ],
+        }
+        ]
+
+        prompt = self.model.processor.apply_chat_template(conversation, add_generation_prompt=True,tokenize=False)
+
+        inputs = self.model.processor(None, prompt, return_tensors="pt").to(self.model.model.device)
+        output = self.model.model.generate(**inputs, temperature=self.model.config.TEMPERATURE, 
+        top_p=self.model.config.TOP_P, max_new_tokens=self.model.config.MAX_TOKENS)
+        response = self.model.processor.decode(output[0], skip_special_tokens=True)
+        text = response.split("assistant\n\n")[-1].strip()
+        text = " ".join(text.split())
+        return [text]

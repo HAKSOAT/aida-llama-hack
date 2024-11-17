@@ -7,7 +7,7 @@ from typing import List
 from fastapi import APIRouter, Depends, File, UploadFile, Request
 from PIL import Image
 from backend.core.auth import get_current_user
-from backend.apis.llama import LlamaClassification, LlamaCaption, LlamaAidTagging
+from backend.apis.llama import LlamaClassification, LlamaCaption, LlamaAidTagging, LlamaRealtimeDescription
 from backend.apis import mock_images
 
 router = APIRouter()
@@ -57,8 +57,17 @@ async def get_segmentation(request: Request):
 
 
 @router.get("/{event_id}/description")
-async def get_description(request: Request):
-    pass
+async def get_description(request: Request, event_id: str):
+    model = request.app.state.llama_model
+    llama_realtime_description = LlamaRealtimeDescription("flood", model)
+    commentary = ["I'm alone, and the power is out. I don't have enough medication or food to last much longer. Please, can someone come and check on us here?", 
+                  "The bridge near us has collapsed, and we're stranded. My husband is injured, and needs first-aid. We need food, clean water, and blankets for the kids. Can someone help us get supplies?", 
+                  "The water flow has subsided in the west part of the city now. The wind has also slowed down."]
+    img_captions = [""]
+    result = llama_realtime_description.custom_inference(commentary, img_captions)
+    return {
+        "result": result
+    }
 
 
 @router.get("/get-aid-tags")
@@ -69,7 +78,7 @@ async def get_aid_tags(request: Request):
     ]
     model = request.app.state.llama_model
     llama_aid_tagging = LlamaAidTagging("flood", model)
-    result = llama_aid_tagging.text_to_image(texts)
+    result = llama_aid_tagging.text_to_mapping(texts)
     return {
         "result": result
     }

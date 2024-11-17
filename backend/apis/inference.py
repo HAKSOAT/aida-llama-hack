@@ -11,3 +11,7 @@ class Inference(ABC):
     @abstractmethod
     def text_to_image(self, input: List[str]) -> List[Image.Image]:
         pass
+    
+    @abstractmethod
+    def text_to_text(self, input: List[str]) -> List[str]:
+        pass
