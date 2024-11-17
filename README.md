@@ -17,12 +17,14 @@ It is being used to perform the following tasks
 - Detect the presence of a disaster in before and after satellite images of a region
 - Extract the aid resources required by victims of a disaster
 - Describe images of a disaster
+- Describe the current state of a disaster in real-time using commentary and images
+
 
 ### Run in containers
 
 -   Clone the repo and navigate to the root folder.
 
--   To run the app using Docker, make sure you've got [Docker][docker] installed on your
+-   To run the app using Docker, make sure you've got [Docker](https://www.docker.com/) installed on your
     system. From the project's root directory, run:
 
     ```sh
@@ -35,7 +37,7 @@ If you want to run the app locally, without using Docker, then:
 
 -   Clone the repo and navigate to the root folder.
 
--   Install [uv][uv] for dependency management.
+-   Install [uv](uv) for dependency management.
 
 -   Start the app. Run:
 
