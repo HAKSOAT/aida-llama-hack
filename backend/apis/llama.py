@@ -3,9 +3,13 @@ from typing import Dict, List, Optional
 import torch
 from PIL import Image
 from transformers import MllamaForConditionalGeneration, MllamaProcessor
-
+import requests
 from backend.apis.config import Config
 from backend.apis.inference import Inference
+from sam2.sam2_image_predictor import SAM2ImagePredictor
+import numpy as np
+from io import BytesIO
+import matplotlib.pyplot as plt
 
 
 class ModelManager:
@@ -51,7 +55,7 @@ class LlamaClassification(Inference):
                         "text": (
                             "There has been a natural disaster between the two satellite images, "
                             "which are before (left) and after (right) images. What is the disaster? "
-                            "Output only one word, for example - flood, hurricane, drought, wildfire, etc."
+                            "Output only one word, for example - flood, conflict, hurricane, drought, wildfire, earthquake etc."
                         ),
                     },
                 ],
@@ -313,3 +317,31 @@ class LlamaRealtimeDescription(Inference):
         text = response.split("assistant\n\n")[-1].strip()
         text = " ".join(text.split())
         return [text]
+
+class SAM_segment(Inference):
+    def __init__(self):
+        
+        self.model = SAM2ImagePredictor.from_pretrained("facebook/sam2-hiera-base-plus")
+
+    def image_to_text(self, input: List[Image.Image]) -> List[str]:
+        raise NotImplementedError("Not implemented for LlamaRealtimeDescription")
+
+    def text_to_image(self, input: List[str]) -> List[Image.Image]:
+        raise NotImplementedError("Not implemented for LlamaRealtimeDescription")
+
+    def text_to_text(self, input: List[str]) -> List[str]:
+        raise NotImplementedError("Not implemented for LlamaRealtimeDescription")
+
+    def custom_inference(
+            self, points: List, point_labels: List, img_url: str
+        ) -> List[np.ndarray]:
+
+        response = requests.get(img_url)
+        img = Image.open(BytesIO(response.content))
+        image = np.array(img.convert("RGB"))
+        with torch.inference_mode(), torch.autocast("cuda", dtype=torch.bfloat16):
+            self.model.set_image(image)
+            masks, _, _ = self.model.predict(point_coords=points, point_labels=point_labels)
+            masks = np.transpose(masks, (1,2,0))
+            masked_image = masks[:,:,2] * 0.5 + image[:,:,2] / 255
+        return [masked_image]

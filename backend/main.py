@@ -9,6 +9,10 @@ from backend.apis.llama import ModelManager
 from backend.core import auth
 from backend.routes import views
 
+import dotenv
+
+dotenv.load_dotenv()
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:

@@ -24,6 +24,8 @@ dependencies = [
     "torch>=2.5.1",
     "transformers>=4.46.2",
     "uvicorn>=0.32.0",
+    "sam-2 @ https://github.com/facebookresearch/sam2.git",
+    "matplotlib>=3.9.2",
 ]
 [dependency-groups]
 dev = [
@@ -93,4 +95,4 @@ console_output_style = "progress"
 #################################################
 
 [tool.setuptools.packages.find]
-where = ["app"]  # ["."] by default
+where = ["."]  # ["."] by default

@@ -19,3 +19,6 @@ class Commentary(BaseResponse):
 
 class RealtimeDescription(BaseResponse):
     pass
+
+class Segmentation(BaseResponse):
+    pass
